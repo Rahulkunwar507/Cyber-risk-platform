@@ -404,28 +404,11 @@ class AIRequest(BaseModel):
     financial_exposure: Optional[float] = None
     features: dict = {}
 
-
 @app.post("/api/ai/recommend")
 def ai_recommend(payload: AIRequest):
-    features = payload.features.copy()
-
-    # Default AI model inputs when the frontend sends only an asset ID
-    defaults = {
-        "cvss": 9.0,
-        "asset_criticality": 10,
-        "internet_exposed": 1,
-        "exploit_available": 1,
-        "data_sensitivity": 10,
-        "security_control_strength": 3,
-        "patch_age_days": 60,
-    }
-
-    for key, value in defaults.items():
-        features.setdefault(key, value)
-
     return run_ai_engine(
-        features,
-        asset_name=payload.asset or payload.assetId or "Unknown Asset",
+        payload.features,
+        asset_name=payload.asset,
         risk_score=payload.risk_score,
         financial_exposure=payload.financial_exposure
     )

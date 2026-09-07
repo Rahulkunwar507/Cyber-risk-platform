@@ -1,4 +1,4 @@
-from models import RiskInput
+from .models import RiskInput
 
 
 def calculate_expected_loss(probability, potential_loss):

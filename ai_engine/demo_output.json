@@ -1,0 +1,43 @@
+{
+  "asset": "Customer Database",
+  "risk_score": 87,
+  "incident_probability": 0.979,
+  "feature_importance": {
+    "cvss": 0.2466,
+    "exploit_available": 0.1938,
+    "internet_exposed": 0.1297,
+    "patch_age_days": 0.1267,
+    "asset_criticality": 0.1195,
+    "security_control_strength": 0.1088,
+    "data_sensitivity": 0.0749
+  },
+  "recommendations": [
+    {
+      "action": "Patch critical vulnerability",
+      "priority": "Critical",
+      "reason": "Very high vulnerability severity."
+    },
+    {
+      "action": "Apply emergency mitigation",
+      "priority": "Critical",
+      "reason": "A known exploit is available."
+    },
+    {
+      "action": "Restrict unnecessary internet exposure",
+      "priority": "High",
+      "reason": "The asset is externally accessible."
+    },
+    {
+      "action": "Strengthen security controls",
+      "priority": "High",
+      "reason": "Current control strength is low."
+    },
+    {
+      "action": "Update and patch the system",
+      "priority": "High",
+      "reason": "Patch age is significantly overdue."
+    }
+  ],
+  "financial_exposure": 5000000,
+  "explanation": "Risk is primarily influenced by the strongest modeled factors: cvss, exploit_available, internet_exposed."
+}

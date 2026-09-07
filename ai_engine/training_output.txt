@@ -1,0 +1,33 @@
+Accuracy: 0.855
+ROC-AUC: 0.9383
+              precision    recall  f1-score   support
+
+           0       0.87      0.91      0.89       129
+           1       0.83      0.75      0.79        71
+
+    accuracy                           0.85       200
+   macro avg       0.85      0.83      0.84       200
+weighted avg       0.85      0.85      0.85       200
+
+
+Feature importance:
+cvss                           0.2466
+exploit_available              0.1938
+internet_exposed               0.1297
+patch_age_days                 0.1267
+asset_criticality              0.1195
+security_control_strength      0.1088
+data_sensitivity               0.0749
+
+Saved model to models/risk_model.pkl
+
+Spreadsheet runtime warmup failed during python startup
+Traceback (most recent call last):
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py", line 26, in warm_spreadsheet_runtime_on_startup
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py", line 785, in warm_spreadsheet_runtime
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py", line 720, in _warm_feature_flows
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py", line 704, in _warm_collaboration_flows
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/generated/interface/models.py", line 32317, in hydrate_crdt_from_proto
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/rpc/remote.py", line 749, in __call__
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/rpc/client.py", line 150, in call
+artifact_tool.rpc.client.RemoteError: hydrateCrdtFromProto requires an empty collaborative document.

@@ -1,8 +1,7 @@
-fastapi
-uvicorn
-pydantic
-requests
 pandas
 scikit-learn
 joblib
+fastapi
+uvicorn
+pydantic
 openai
