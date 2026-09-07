@@ -45,8 +45,9 @@ export async function getVulnerabilitySummary() {
 }
 
 export async function getAIRecommendation(assetId) {
-  return request(`/api/ai/recommend?assetId=${assetId}`, {
+  return request("/api/ai/recommend", {
     method: "POST",
+    body: JSON.stringify({ assetId }),
   });
 }
 

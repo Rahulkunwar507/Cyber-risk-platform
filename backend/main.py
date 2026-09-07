@@ -139,6 +139,15 @@ def get_assets():
     ]
 
 # -------------------------
+@app.get("/api/assets/{asset_id}")
+def get_asset(asset_id: str):
+    assets = get_assets()
+    for asset in assets:
+        if asset["id"] == asset_id:
+            return asset
+    raise HTTPException(status_code=404, detail="Asset not found")
+
+
 # Vulnerabilities
 # -------------------------
 
@@ -354,6 +363,14 @@ def get_vulnerability_summary():
     }
 
 # -------------------------
+@app.get("/api/vulnerabilities/{vulnerability_id}")
+def get_vulnerability(vulnerability_id: str):
+    for vulnerability in VULNERABILITIES:
+        if vulnerability["id"] == vulnerability_id:
+            return vulnerability
+    raise HTTPException(status_code=404, detail="Vulnerability not found")
+
+
 # Notifications
 # -------------------------
 
@@ -423,12 +440,72 @@ def ai_recommend(payload: AIRequest):
     for key, value in defaults.items():
         features.setdefault(key, value)
 
-    return run_ai_engine(
+    result = run_ai_engine(
         features,
         asset_name=payload.asset or payload.assetId or "Unknown Asset",
-        risk_score=payload.risk_score,
+        risk_score=payload.risk_score or 92,
         financial_exposure=payload.financial_exposure
     )
+
+    risk_score = result["risk_score"] or 92
+    priority = "Critical" if risk_score >= 90 else "High" if risk_score >= 75 else "Medium" if risk_score >= 50 else "Low"
+
+    why_risky = [
+        {
+            "label": "High vulnerability severity",
+            "severity": "Critical",
+            "icon": "bug",
+            "detail": f"CVSS score of {features['cvss']} indicates a severe vulnerability."
+        },
+        {
+            "label": "Internet exposure",
+            "severity": "High",
+            "icon": "globe",
+            "detail": "The asset is directly exposed to the internet."
+        },
+        {
+            "label": "Weak security controls",
+            "severity": "High",
+            "icon": "shield",
+            "detail": "Current security control strength is below the recommended level."
+        }
+    ]
+
+    action_map = {
+        "Patch critical vulnerability": {"cost": 1.0, "riskReduction": 20, "icon": "wrench", "mappedOptionId": "Patch critical vulnerability"},
+        "Apply emergency mitigation": {"cost": 0.5, "riskReduction": 10, "icon": "shield", "mappedOptionId": "MFA"},
+        "Restrict unnecessary internet exposure": {"cost": 3.0, "riskReduction": 25, "icon": "network", "mappedOptionId": "Network segmentation"},
+        "Strengthen security controls": {"cost": 2.0, "riskReduction": 18, "icon": "shield", "mappedOptionId": "EDR"},
+        "Update and patch the system": {"cost": 1.0, "riskReduction": 20, "icon": "wrench", "mappedOptionId": "Patch critical vulnerability"},
+        "Increase protection for sensitive data": {"cost": 2.0, "riskReduction": 12, "icon": "database", "mappedOptionId": "Backup"}
+    }
+
+    recommended_actions = []
+    for item in result["recommendations"]:
+        mapping = action_map.get(item["action"], {"cost": 0, "riskReduction": 0, "icon": "wrench", "mappedOptionId": None})
+        recommended_actions.append({
+            "title": item["action"],
+            "cost": mapping["cost"],
+            "riskReduction": "High" if mapping["riskReduction"] >= 20 else "Medium" if mapping["riskReduction"] >= 10 else "Low",
+            "icon": mapping["icon"],
+            "mappedOptionId": mapping["mappedOptionId"]
+        })
+
+    return {
+        "asset": result["asset"],
+        "riskScore": risk_score,
+        "whyRisky": why_risky,
+        "businessImpact": "A successful attack could expose sensitive customer data, disrupt critical services, and create significant financial and regulatory impact.",
+        "analysis": {
+            "recommendedPriority": priority,
+            "recommendation": result["recommendations"][0]["action"] if result["recommendations"] else "Strengthen security controls",
+            "rationale": result["explanation"]
+        },
+        "recommendedActions": recommended_actions,
+        "financialExposure": result["financial_exposure"],
+        "incidentProbability": result["incident_probability"],
+        "featureImportance": result["feature_importance"]
+    }
 
 
 # -------------------------
@@ -437,9 +514,58 @@ def ai_recommend(payload: AIRequest):
 
 @app.get("/api/optimizer/options")
 def optimizer_options():
-    budget, investments = create_sample_dataset()
-    optimizer = InvestmentOptimizer(budget, investments)
-    return optimizer.get_all_options()
+    return [
+        {
+            "id": "patch-critical-vulnerability",
+            "name": "Patch critical vulnerability",
+            "cost": 100000,
+            "riskReduction": 20,
+            "priority": "Critical",
+            "assetCriticality": "Critical",
+            "assetExposure": "Internet Exposed",
+            "description": "Apply critical security patches to internet-exposed systems and high-value assets."
+        },
+        {
+            "id": "deploy-edr",
+            "name": "EDR",
+            "cost": 200000,
+            "riskReduction": 18,
+            "priority": "High",
+            "assetCriticality": "High",
+            "assetExposure": "Internet Exposed",
+            "description": "Deploy endpoint detection and response coverage across critical systems."
+        },
+        {
+            "id": "network-segmentation",
+            "name": "Network segmentation",
+            "cost": 300000,
+            "riskReduction": 25,
+            "priority": "High",
+            "assetCriticality": "Critical",
+            "assetExposure": "Internet Exposed",
+            "description": "Isolate critical systems to reduce lateral movement and contain attacks."
+        },
+        {
+            "id": "improve-backup-recovery",
+            "name": "Backup",
+            "cost": 200000,
+            "riskReduction": 12,
+            "priority": "Medium",
+            "assetCriticality": "High",
+            "assetExposure": "Restricted",
+            "description": "Harden backups and improve recovery readiness for critical production systems."
+        },
+        {
+            "id": "enable-mfa",
+            "name": "MFA",
+            "cost": 50000,
+            "riskReduction": 10,
+            "priority": "High",
+            "assetCriticality": "Medium",
+            "assetExposure": "Internal",
+            "description": "Enable multi-factor authentication for administrative and privileged accounts."
+        }
+    ]
 
 
 class OptimizeRequest(BaseModel):
